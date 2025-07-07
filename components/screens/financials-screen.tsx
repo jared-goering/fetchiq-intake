@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Slider } from "@/components/ui/slider"
+import { cn } from "@/lib/utils"
+import { useState } from "react"
 
 interface FinancialsScreenProps {
   formState: any
@@ -15,13 +17,20 @@ interface FinancialsScreenProps {
 }
 
 export function FinancialsScreen({ formState, updateFormState, onNext, onPrevious }: FinancialsScreenProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target
     updateFormState({ [name]: value })
   }
 
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
+  }
+
   const handleTradeShowsChange = (value: string) => {
     updateFormState({ tradeShows: value })
+    setTouched(prev => ({ ...prev, tradeShows: true }))
   }
 
   const revenueRanges = [
@@ -34,6 +43,7 @@ export function FinancialsScreen({ formState, updateFormState, onNext, onPreviou
 
   const handleRevenueRangeChange = (value: number[]) => {
     updateFormState({ salesRevenueRange: revenueRanges[value[0]] })
+    setTouched(prev => ({ ...prev, salesRevenueRange: true }))
   }
 
   const getCurrentSliderValue = () => {
@@ -104,9 +114,10 @@ export function FinancialsScreen({ formState, updateFormState, onNext, onPreviou
             name="currentAssets"
             value={formState.currentAssets}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('currentAssets')}
             placeholder="Describe your current assets"
             rows={4}
-            className={!formState.currentAssets?.trim() ? "border-red-500" : ""}
+            className={cn(touched.currentAssets && !formState.currentAssets?.trim() && "border-red-500")}
           />
         </div>
       </CardContent>

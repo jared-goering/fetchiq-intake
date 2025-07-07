@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface IndustryScreenProps {
   formState: any
@@ -27,10 +28,15 @@ export function IndustryScreen({
   onPrevious,
 }: IndustryScreenProps) {
   const [loading, setLoading] = useState<Record<string, boolean>>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target
     updateFormState({ [name]: value })
+  }
+
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
   }
 
   // Check if all required fields are filled
@@ -75,8 +81,9 @@ export function IndustryScreen({
             name="industryFit"
             value={formState.industryFit}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('industryFit')}
             rows={4}
-            className={!formState.industryFit?.trim() ? "border-red-500" : ""}
+            className={cn(touched.industryFit && !formState.industryFit?.trim() && "border-red-500")}
           />
           <div className="flex gap-2 mt-2">
             <Button variant="outline" onClick={() => handleRegenerate("industryFit")} disabled={loading.industryFit}>
@@ -94,8 +101,9 @@ export function IndustryScreen({
             name="industryFitAlt"
             value={formState.industryFitAlt}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('industryFitAlt')}
             rows={4}
-            className={!formState.industryFitAlt?.trim() ? "border-red-500" : ""}
+            className={cn(touched.industryFitAlt && !formState.industryFitAlt?.trim() && "border-red-500")}
           />
           <div className="flex gap-2 mt-2">
             <Button variant="outline" onClick={() => handleRegenerate("industryFitAlt")} disabled={loading.industryFitAlt}>
@@ -113,8 +121,9 @@ export function IndustryScreen({
             name="productDescription"
             value={formState.productDescription}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('productDescription')}
             rows={4}
-            className={!formState.productDescription?.trim() ? "border-red-500" : ""}
+            className={cn(touched.productDescription && !formState.productDescription?.trim() && "border-red-500")}
           />
           <div className="flex gap-2 mt-2">
             <Button variant="outline" onClick={() => handleRegenerate("productDescription")} disabled={loading.productDescription}>

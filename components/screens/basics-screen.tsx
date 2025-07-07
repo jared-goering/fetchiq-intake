@@ -22,10 +22,15 @@ export function BasicsScreen({ formState, updateFormState, onNext, onPrevious }:
   const [date, setDate] = useState<Date | undefined>(
     formState.foundedDate ? new Date(formState.foundedDate) : undefined,
   )
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     updateFormState({ [name]: value })
+  }
+
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
   }
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
@@ -33,10 +38,12 @@ export function BasicsScreen({ formState, updateFormState, onNext, onPrevious }:
     if (selectedDate) {
       updateFormState({ foundedDate: selectedDate.toISOString() })
     }
+    setTouched(prev => ({ ...prev, foundedDate: true }))
   }
 
   const handleStageSelect = (stage: string) => {
     updateFormState({ stage })
+    setTouched(prev => ({ ...prev, stage: true }))
   }
 
   const isFormValid = () => {
@@ -67,8 +74,9 @@ export function BasicsScreen({ formState, updateFormState, onNext, onPrevious }:
             name="operatingName"
             value={formState.operatingName}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('operatingName')}
             placeholder="Your company's operating name"
-            className={cn(!formState.operatingName?.trim() && "border-red-300")}
+            className={cn(touched.operatingName && !formState.operatingName?.trim() && "border-red-300")}
           />
         </div>
 
@@ -94,7 +102,7 @@ export function BasicsScreen({ formState, updateFormState, onNext, onPrevious }:
                 className={cn(
                   "w-full justify-start text-left font-normal", 
                   !date && "text-muted-foreground",
-                  !formState.foundedDate && "border-red-300"
+                  touched.foundedDate && !formState.foundedDate && "border-red-300"
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />

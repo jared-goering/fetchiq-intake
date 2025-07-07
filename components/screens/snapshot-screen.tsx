@@ -20,6 +20,7 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([])
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const [addressFocused, setAddressFocused] = useState(false)
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const listRef = useRef<HTMLUListElement | null>(null)
 
   const MAPBOX_BASE =
@@ -85,6 +86,10 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
     } else {
       updateFormState({ [name]: value })
     }
+  }
+
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
   }
 
   const handleAddressSelect = (item: any) => {
@@ -166,8 +171,9 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
                 name="companyName"
                 value={formState.companyName}
                 onChange={handleInputChange}
+                onBlur={() => handleBlur('companyName')}
                 placeholder="Your company name"
-                className={cn(!formState.companyName?.trim() && "border-red-300")}
+                className={cn(touched.companyName && !formState.companyName?.trim() && "border-red-300")}
               />
             </div>
 
@@ -185,10 +191,11 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
                   onFocus={() => setAddressFocused(true)}
                   onBlur={() => {
                     setAddressFocused(false)
+                    handleBlur('address')
                     setTimeout(() => setAddressSuggestions([]), 100)
                   }}
                   placeholder="Street address"
-                  className={cn(!formState.address?.trim() && "border-red-300")}
+                  className={cn(touched.address && !formState.address?.trim() && "border-red-300")}
                   autoComplete="off"
                 />
 
@@ -227,8 +234,9 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
                 name="website"
                 value={formState.website}
                 onChange={handleInputChange}
+                onBlur={() => handleBlur('website')}
                 placeholder="https://example.com"
-                className={cn(!formState.website?.trim() && "border-red-300")}
+                className={cn(touched.website && !formState.website?.trim() && "border-red-300")}
               />
             </div>
           </div>
@@ -243,8 +251,9 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
                 name="city" 
                 value={formState.city} 
                 onChange={handleInputChange} 
+                onBlur={() => handleBlur('city')}
                 placeholder="City" 
-                className={cn(!formState.city?.trim() && "border-red-300")}
+                className={cn(touched.city && !formState.city?.trim() && "border-red-300")}
               />
             </div>
 
@@ -257,8 +266,9 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
                 name="state" 
                 value={formState.state} 
                 onChange={handleInputChange} 
+                onBlur={() => handleBlur('state')}
                 placeholder="State" 
-                className={cn(!formState.state?.trim() && "border-red-300")}
+                className={cn(touched.state && !formState.state?.trim() && "border-red-300")}
               />
             </div>
 
@@ -271,8 +281,9 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
                 name="country"
                 value={formState.country}
                 onChange={handleInputChange}
+                onBlur={() => handleBlur('country')}
                 placeholder="Country"
-                className={cn(!formState.country?.trim() && "border-red-300")}
+                className={cn(touched.country && !formState.country?.trim() && "border-red-300")}
               />
             </div>
           </div>

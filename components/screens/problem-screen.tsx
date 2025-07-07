@@ -25,14 +25,20 @@ export function ProblemScreen({ formState, updateFormState, productTags, onNext,
   const [problemSuggestions, setProblemSuggestions] = useState<string[]>([])
   const [strengthSuggestions, setStrengthSuggestions] = useState<string[]>([])
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false)
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target
     updateFormState({ [name]: value })
   }
 
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
+  }
+
   const handleTagsChange = (selectedTags: string[]) => {
     updateFormState({ productTags: selectedTags })
+    setTouched(prev => ({ ...prev, productTags: true }))
   }
 
   const generateSuggestions = async () => {
@@ -91,7 +97,7 @@ export function ProblemScreen({ formState, updateFormState, productTags, onNext,
             selected={formState.productTags}
             onChange={handleTagsChange}
             placeholder="Select product tags"
-            className={cn(formState.productTags?.length === 0 && "border-red-300")}
+            className={cn(touched.productTags && formState.productTags?.length === 0 && "border-red-300")}
           />
         </div>
 
@@ -107,9 +113,10 @@ export function ProblemScreen({ formState, updateFormState, productTags, onNext,
             name="problem"
             value={formState.problem}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('problem')}
             placeholder="Describe the problem your startup is solving"
             rows={4}
-            className={cn(!formState.problem?.trim() && "border-red-300")}
+            className={cn(touched.problem && !formState.problem?.trim() && "border-red-300")}
           />
 
           <SmartSuggest
@@ -131,9 +138,10 @@ export function ProblemScreen({ formState, updateFormState, productTags, onNext,
             name="strengths"
             value={formState.strengths}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('strengths')}
             placeholder="Describe your startup's key strengths"
             rows={4}
-            className={cn(!formState.strengths?.trim() && "border-red-300")}
+            className={cn(touched.strengths && !formState.strengths?.trim() && "border-red-300")}
           />
 
           <SmartSuggest

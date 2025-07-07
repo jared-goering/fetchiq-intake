@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
 import type { ChangeEvent } from "react"
 
 interface TeamCardProps {
@@ -27,9 +28,15 @@ interface TeamCardProps {
 }
 
 export function TeamCard({ member, index, updateMember, removeMember, showRemoveButton }: TeamCardProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     updateMember({ [name]: value })
+  }
+
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
   }
 
   return (
@@ -51,8 +58,9 @@ export function TeamCard({ member, index, updateMember, removeMember, showRemove
               name="firstName"
               value={member.firstName}
               onChange={handleInputChange}
+              onBlur={() => handleBlur('firstName')}
               placeholder="First Name"
-              className={cn(!member.firstName?.trim() && "border-red-300")}
+              className={cn(touched.firstName && !member.firstName?.trim() && "border-red-300")}
             />
           </div>
 
@@ -65,8 +73,9 @@ export function TeamCard({ member, index, updateMember, removeMember, showRemove
               name="lastName"
               value={member.lastName}
               onChange={handleInputChange}
+              onBlur={() => handleBlur('lastName')}
               placeholder="Last Name"
-              className={cn(!member.lastName?.trim() && "border-red-300")}
+              className={cn(touched.lastName && !member.lastName?.trim() && "border-red-300")}
             />
           </div>
 
@@ -79,8 +88,9 @@ export function TeamCard({ member, index, updateMember, removeMember, showRemove
               name="role"
               value={member.role}
               onChange={handleInputChange}
+              onBlur={() => handleBlur('role')}
               placeholder="CEO, CTO, etc."
-              className={cn(!member.role?.trim() && "border-red-300")}
+              className={cn(touched.role && !member.role?.trim() && "border-red-300")}
             />
           </div>
 
@@ -104,9 +114,10 @@ export function TeamCard({ member, index, updateMember, removeMember, showRemove
               name="email"
               value={member.email}
               onChange={handleInputChange}
+              onBlur={() => handleBlur('email')}
               placeholder="email@example.com"
               type="email"
-              className={cn(!member.email?.trim() && "border-red-300")}
+              className={cn(touched.email && !member.email?.trim() && "border-red-300")}
             />
           </div>
 
@@ -119,9 +130,10 @@ export function TeamCard({ member, index, updateMember, removeMember, showRemove
               name="phone"
               value={member.phone}
               onChange={handleInputChange}
+              onBlur={() => handleBlur('phone')}
               placeholder="+1 (555) 123-4567"
               type="tel"
-              className={cn(!member.phone?.trim() && "border-red-300")}
+              className={cn(touched.phone && !member.phone?.trim() && "border-red-300")}
             />
           </div>
         </div>
@@ -135,9 +147,10 @@ export function TeamCard({ member, index, updateMember, removeMember, showRemove
             name="bio"
             value={member.bio}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('bio')}
             placeholder="Brief professional biography"
             rows={3}
-            className={cn(!member.bio?.trim() && "border-red-300")}
+            className={cn(touched.bio && !member.bio?.trim() && "border-red-300")}
           />
         </div>
 
@@ -150,9 +163,10 @@ export function TeamCard({ member, index, updateMember, removeMember, showRemove
             name="skillsMarkets"
             value={member.skillsMarkets}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('skillsMarkets')}
             placeholder="Key skills and market expertise"
             rows={2}
-            className={cn(!member.skillsMarkets?.trim() && "border-red-300")}
+            className={cn(touched.skillsMarkets && !member.skillsMarkets?.trim() && "border-red-300")}
           />
         </div>
       </CardContent>

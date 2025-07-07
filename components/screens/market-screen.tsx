@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
 
 interface MarketScreenProps {
   formState: any
@@ -17,9 +18,15 @@ interface MarketScreenProps {
 }
 
 export function MarketScreen({ formState, updateFormState, onNext, onPrevious }: MarketScreenProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     updateFormState({ [name]: value })
+  }
+
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
   }
 
   const handleCurrencyChange = (value: string) => {
@@ -28,6 +35,7 @@ export function MarketScreen({ formState, updateFormState, onNext, onPrevious }:
 
   const handleRaisingChange = (value: string) => {
     updateFormState({ raising: value })
+    setTouched(prev => ({ ...prev, raising: true }))
   }
 
   const currencies = [
@@ -62,9 +70,10 @@ export function MarketScreen({ formState, updateFormState, onNext, onPrevious }:
             name="competition"
             value={formState.competition}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('competition')}
             placeholder="Describe your main competitors and how you differentiate"
             rows={4}
-            className={cn(!formState.competition?.trim() && "border-red-300")}
+            className={cn(touched.competition && !formState.competition?.trim() && "border-red-300")}
           />
         </div>
 
@@ -77,9 +86,10 @@ export function MarketScreen({ formState, updateFormState, onNext, onPrevious }:
             name="traction"
             value={formState.traction}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('traction')}
             placeholder="Describe your current traction (users, revenue, growth, etc.)"
             rows={4}
-            className={cn(!formState.traction?.trim() && "border-red-300")}
+            className={cn(touched.traction && !formState.traction?.trim() && "border-red-300")}
           />
         </div>
 
@@ -122,9 +132,10 @@ export function MarketScreen({ formState, updateFormState, onNext, onPrevious }:
             name="keyCustomers"
             value={formState.keyCustomers}
             onChange={handleInputChange}
+            onBlur={() => handleBlur('keyCustomers')}
             placeholder="Describe your key customers or user base"
             rows={3}
-            className={cn(!formState.keyCustomers?.trim() && "border-red-300")}
+            className={cn(touched.keyCustomers && !formState.keyCustomers?.trim() && "border-red-300")}
           />
         </div>
 

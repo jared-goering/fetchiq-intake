@@ -30,10 +30,15 @@ export function UploadsScreen({
   onPrevious,
 }: UploadsScreenProps) {
   const [loading, setLoading] = useState<Record<string, boolean>>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     updateFormState({ [name]: value })
+  }
+
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }))
   }
 
   // Handle video file selection – store file name / URL (could be uploaded elsewhere)
@@ -87,8 +92,9 @@ export function UploadsScreen({
               name="pmf" 
               value={formState.pmf} 
               onChange={handleInputChange} 
+              onBlur={() => handleBlur('pmf')}
               rows={5}
-              className={cn(!formState.pmf?.trim() && "border-red-300")}
+              className={cn(touched.pmf && !formState.pmf?.trim() && "border-red-300")}
             />
             <div className="flex gap-2 mt-2">
               <Button variant="outline" onClick={() => handleRegenerate("pmf")} disabled={loading.pmf}>
@@ -106,8 +112,9 @@ export function UploadsScreen({
               name="biz" 
               value={formState.biz} 
               onChange={handleInputChange} 
+              onBlur={() => handleBlur('biz')}
               rows={5}
-              className={cn(!formState.biz?.trim() && "border-red-300")}
+              className={cn(touched.biz && !formState.biz?.trim() && "border-red-300")}
             />
             <div className="flex gap-2 mt-2">
               <Button variant="outline" onClick={() => handleRegenerate("biz")} disabled={loading.biz}>
@@ -125,8 +132,9 @@ export function UploadsScreen({
               name="vision" 
               value={formState.vision} 
               onChange={handleInputChange} 
+              onBlur={() => handleBlur('vision')}
               rows={5}
-              className={cn(!formState.vision?.trim() && "border-red-300")}
+              className={cn(touched.vision && !formState.vision?.trim() && "border-red-300")}
             />
             <div className="flex gap-2 mt-2">
               <Button variant="outline" onClick={() => handleRegenerate("vision")} disabled={loading.vision}>
