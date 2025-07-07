@@ -345,5 +345,6 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
         <Button onClick={onNext} disabled={!isFormValid()}>Next</Button>
       </CardFooter>
     </Card>
+    
   )
 }
