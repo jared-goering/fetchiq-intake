@@ -5,11 +5,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
 import { CalendarIcon, HelpCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
 
 interface BasicsScreenProps {
   formState: any
@@ -19,10 +19,13 @@ interface BasicsScreenProps {
 }
 
 export function BasicsScreen({ formState, updateFormState, onNext, onPrevious }: BasicsScreenProps) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [date, setDate] = useState<Date | undefined>(
     formState.foundedDate ? new Date(formState.foundedDate) : undefined,
   )
-  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [dateInputValue, setDateInputValue] = useState<string>(
+    formState.foundedDate ? format(new Date(formState.foundedDate), "yyyy-MM-dd") : ""
+  )
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -33,9 +36,27 @@ export function BasicsScreen({ formState, updateFormState, onNext, onPrevious }:
     setTouched(prev => ({ ...prev, [fieldName]: true }))
   }
 
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setDateInputValue(value)
+    
+    if (value) {
+      const parsedDate = new Date(value)
+      if (!isNaN(parsedDate.getTime())) {
+        setDate(parsedDate)
+        updateFormState({ foundedDate: parsedDate.toISOString() })
+      }
+    } else {
+      setDate(undefined)
+      updateFormState({ foundedDate: "" })
+    }
+  }
+
   const handleDateSelect = (selectedDate: Date | undefined) => {
     setDate(selectedDate)
     if (selectedDate) {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd")
+      setDateInputValue(formattedDate)
       updateFormState({ foundedDate: selectedDate.toISOString() })
     }
     setTouched(prev => ({ ...prev, foundedDate: true }))
@@ -95,24 +116,36 @@ export function BasicsScreen({ formState, updateFormState, onNext, onPrevious }:
           <Label htmlFor="foundedDate" data-required>
             Founded Date <span className="text-red-500">*</span>
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal", 
-                  !date && "text-muted-foreground",
-                  touched.foundedDate && !formState.foundedDate && "border-red-300"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : "Select date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus />
-            </PopoverContent>
-          </Popover>
+          <div className="flex gap-2">
+            <Input
+              id="foundedDate"
+              name="foundedDate"
+              type="date"
+              value={dateInputValue}
+              onChange={handleDateInputChange}
+              onBlur={() => handleBlur('foundedDate')}
+              className={cn(
+                "flex-1",
+                touched.foundedDate && !formState.foundedDate && "border-red-300",
+              )}
+            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "px-3",
+                    touched.foundedDate && !formState.foundedDate && "border-red-300",
+                  )}
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
         <div>

@@ -7,14 +7,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Upload, Video, CheckCircle } from "lucide-react"
+import { Loader2, Upload, Video, CheckCircle, HelpCircle } from "lucide-react"
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
 interface UploadsScreenProps {
   formState: any
   updateFormState: (updates: any) => void
   generateNarratives: (state: any, specificKey?: string | null) => Promise<any>
-  regenerateNarrative: (key: string) => Promise<void>
+  regenerateNarrative: (key: string, context?: string | null) => Promise<void>
   acceptNarrative: (key: string) => void
   onNext: () => void
   onPrevious: () => void
@@ -31,6 +33,8 @@ export function UploadsScreen({
 }: UploadsScreenProps) {
   const [loading, setLoading] = useState<Record<string, boolean>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [dialogOpenKey, setDialogOpenKey] = useState<string | null>(null)
+  const [contextText, setContextText] = useState("")
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -71,9 +75,16 @@ export function UploadsScreen({
 
   // Helper to regenerate a single narrative with loading feedback
   const handleRegenerate = async (key: string) => {
-    setLoading((prev) => ({ ...prev, [key]: true }))
-    await regenerateNarrative(key)
-    setLoading((prev) => ({ ...prev, [key]: false }))
+    setDialogOpenKey(key)
+    setContextText("")
+  }
+
+  const runRegeneration = async () => {
+    if (!dialogOpenKey) return
+    setLoading((prev) => ({ ...prev, [dialogOpenKey]: true }))
+    await regenerateNarrative(dialogOpenKey, contextText.trim() || null)
+    setLoading((prev) => ({ ...prev, [dialogOpenKey]: false }))
+    setDialogOpenKey(null)
   }
 
   return (
@@ -82,11 +93,42 @@ export function UploadsScreen({
         <CardTitle>Founder Narrative</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Regenerate Context Dialog */}
+        <Dialog open={dialogOpenKey !== null} onOpenChange={(open) => !open && setDialogOpenKey(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Provide context for regeneration</DialogTitle>
+            </DialogHeader>
+            <Textarea
+              value={contextText}
+              onChange={(e) => setContextText(e.target.value)}
+              placeholder="Add any specific guidance or details you want the AI to consider..."
+              rows={4}
+            />
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setDialogOpenKey(null)}>Cancel</Button>
+              <Button onClick={runRegeneration}>Generate</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="space-y-6">
           <div>
-            <Label htmlFor="pmf" data-required>
-              1. Product / Market-Fit (auto-draft) <span className="text-red-500">*</span>
-            </Label>
+            <div className="flex items-center gap-1 mb-1">
+              <Label htmlFor="pmf" data-required>
+                1. Product / Market-Fit (auto-draft) <span className="text-red-500">*</span>
+              </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This paragraph was generated automatically based on your answers. Please review and edit so it accurately reflects your unique story.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Textarea 
               id="pmf" 
               name="pmf" 
@@ -104,9 +146,21 @@ export function UploadsScreen({
           </div>
 
           <div>
-            <Label htmlFor="biz" data-required>
-              2. Business Model & Revenue (auto-draft) <span className="text-red-500">*</span>
-            </Label>
+            <div className="flex items-center gap-1 mb-1">
+              <Label htmlFor="biz" data-required>
+                2. Business Model & Revenue (auto-draft) <span className="text-red-500">*</span>
+              </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    AI drafted this section for you. Feel free to tailor the wording to best describe how your business generates revenue.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Textarea 
               id="biz" 
               name="biz" 
@@ -124,9 +178,21 @@ export function UploadsScreen({
           </div>
 
           <div>
-            <Label htmlFor="vision" data-required>
-              3. Industry Vision (auto-draft) <span className="text-red-500">*</span>
-            </Label>
+            <div className="flex items-center gap-1 mb-1">
+              <Label htmlFor="vision" data-required>
+                3. Industry Vision (auto-draft) <span className="text-red-500">*</span>
+              </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This draft vision statement was generated automatically. Modify it so it captures your own aspirations and voice.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Textarea 
               id="vision" 
               name="vision" 

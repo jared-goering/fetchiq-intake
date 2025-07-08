@@ -67,21 +67,29 @@ export function FinancialsScreen({ formState, updateFormState, onNext, onPreviou
           <Label htmlFor="salesRevenueRange" data-required>
             Sales Revenue range (2024) <span className="text-red-500">*</span>
           </Label>
-          <div className="mt-4 mb-2">
-            <div className="flex justify-between text-sm text-gray-600 mb-2 px-1">
-              {revenueRanges.map((range, index) => (
-                <span key={index} className="text-xs">{range}</span>
-              ))}
-            </div>
-            <Slider
-              value={getCurrentSliderValue()}
-              onValueChange={handleRevenueRangeChange}
-              max={4}
-              min={0}
-              step={1}
-              className="w-full"
-            />
+          <div className="relative w-full mb-4 h-4 px-2">
+            {revenueRanges.map((range, index) => {
+              const percent = index * 25
+              const translate = index === 0 ? "0%" : index === revenueRanges.length - 1 ? "-100%" : "-50%"
+              return (
+                <span
+                  key={index}
+                  className="absolute whitespace-nowrap text-xs text-gray-600"
+                  style={{ left: `${percent}%`, transform: `translateX(${translate})` }}
+                >
+                  {range}
+                </span>
+              )
+            })}
           </div>
+          <Slider
+            value={getCurrentSliderValue()}
+            onValueChange={handleRevenueRangeChange}
+            max={4}
+            min={0}
+            step={1}
+            className="w-full px-2"
+          />
           {formState.salesRevenueRange && (
             <div className="text-center mt-2 text-sm font-medium">
               Selected: {formState.salesRevenueRange}

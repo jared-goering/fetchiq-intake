@@ -15,6 +15,7 @@ import { UploadsScreen } from "@/components/screens/uploads-screen"
 import { IndustryScreen } from "@/components/screens/industry-screen"
 import { FinancialsScreen } from "@/components/screens/financials-screen"
 import { ReviewScreen } from "@/components/screens/review-screen"
+import { ThankYouScreen } from "@/components/screens/thank-you-screen"
 import { db } from "@/lib/firebase"
 import {
   collection,
@@ -205,7 +206,7 @@ export function OppMapIntakeForm() {
   // Update the calculateProgress function to account for the new total number of screens
   // Calculate progress based on required fields and current screen
   const calculateProgress = () => {
-    const totalScreens = 10 // Including welcome screen, now with 10 total screens
+    const totalScreens = 11 // Added Thank You screen
     return Math.min(Math.round((currentScreen / (totalScreens - 1)) * 100), 100)
   }
 
@@ -229,7 +230,7 @@ export function OppMapIntakeForm() {
   // Update the goToNextScreen function to account for the new maximum screen index
   // Navigate to next screen
   const goToNextScreen = () => {
-    if (currentScreen < 9) {
+    if (currentScreen < 10) {
       setCurrentScreen((prev) => prev + 1)
     }
   }
@@ -245,12 +246,13 @@ export function OppMapIntakeForm() {
   const generateNarratives = async (
     state: any,
     specificKey: string | null = null,
+    context: string | null = null,
   ): Promise<Record<string, string>> => {
     try {
       const res = await fetch("/api/generate-narratives", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state, specificKey }),
+        body: JSON.stringify({ state, specificKey, context }),
       })
 
       if (!res.ok) throw new Error("OpenAI generation failed")
@@ -272,12 +274,13 @@ export function OppMapIntakeForm() {
   const generateIndustryContent = async (
     state: any,
     specificKey: string | null = null,
+    context: string | null = null,
   ): Promise<Record<string, string>> => {
     try {
       const res = await fetch("/api/generate-industry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state, specificKey }),
+        body: JSON.stringify({ state, specificKey, context }),
       })
 
       if (!res.ok) throw new Error("OpenAI industry content failed")
@@ -296,14 +299,14 @@ export function OppMapIntakeForm() {
   }
 
   // Regenerate a specific narrative
-  const regenerateNarrative = async (key: string) => {
-    const newNarrative = await generateNarratives(formState, key)
+  const regenerateNarrative = async (key: string, context: string | null = null) => {
+    const newNarrative = await generateNarratives(formState, key, context)
     updateFormState(newNarrative)
   }
 
   // Regenerate a specific industry content
-  const regenerateIndustryContent = async (key: string) => {
-    const newContent = await generateIndustryContent(formState, key)
+  const regenerateIndustryContent = async (key: string, context: string | null = null) => {
+    const newContent = await generateIndustryContent(formState, key, context)
     updateFormState(newContent)
   }
 
@@ -346,12 +349,8 @@ export function OppMapIntakeForm() {
         )
       }
 
-      // Clear local storage + reset state
-      localStorage.removeItem("oppFormDraft")
-      localStorage.removeItem("oppFormDocId")
-      setDocId(null)
-      setFormState(initialState)
-      setCurrentScreen(0)
+      // Navigate to Thank You screen
+      setCurrentScreen(10)
     } catch (error) {
       toast({
         title: "Error submitting form",
@@ -456,6 +455,19 @@ export function OppMapIntakeForm() {
             onSubmit={submitForm}
             isSubmitting={isSubmitting}
             setCurrentScreen={setCurrentScreen}
+          />
+        )
+      case 10:
+        return (
+          <ThankYouScreen
+            onRestart={() => {
+              // Reset everything for a new submission
+              localStorage.removeItem("oppFormDraft")
+              localStorage.removeItem("oppFormDocId")
+              setDocId(null)
+              setFormState(initialState)
+              setCurrentScreen(0)
+            }}
           />
         )
       default:

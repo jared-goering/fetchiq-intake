@@ -6,7 +6,7 @@ const openai = new OpenAI()
 
 export async function POST(request: Request) {
   try {
-    const { state, specificKey } = await request.json()
+    const { state, specificKey, context } = await request.json()
 
     const basePrompt = `You are a startup analyst helping founders craft the "Industry Fit" section of their pitch.\n\n` +
       `Generate concise, clear prose for each of these keys:\n` +
@@ -17,9 +17,11 @@ export async function POST(request: Request) {
       `Do not wrap in markdown.\n\n` +
       `STARTUP DATA:\n${JSON.stringify(state, null, 2)}`
 
+    const userContext = context ? `\n\nADDITIONAL GUIDANCE FROM FOUNDER:\n${context}` : ""
+
     const prompt = specificKey
       ? `You are a startup analyst helping founders craft the \"Industry Fit\" section of their pitch.\n\n` +
-        `Write the \"${specificKey}\" field only (max 150 words). Return plain text.\n\n` +
+        `Write the \"${specificKey}\" field only (max 150 words). Return plain text.${userContext}\n\n` +
         `STARTUP DATA:\n${JSON.stringify(state, null, 2)}`
       : basePrompt
 

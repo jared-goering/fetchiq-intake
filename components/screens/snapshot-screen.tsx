@@ -45,14 +45,23 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
         `${MAPBOX_BASE}/${encodeURIComponent(addressQuery)}.json?` +
         new URLSearchParams({
           access_token: process.env.NEXT_PUBLIC_MAPBOX_TOKEN!,
-          types: "address,place",
+          // Restrict to full street addresses only
+          types: "address",
+          // Limit to United States and Canada
           country: "us,ca",
           autocomplete: "true",
           limit: "10",
         })
       )
         .then((res) => res.json())
-        .then(({ features }) => setAddressSuggestions(features))
+        .then(({ features }) => {
+          // Extra safety: ensure results are only US / CA
+          const filtered = (features || []).filter((f: any) => {
+            const countryCtx = (f.context || []).find((ctx: any) => typeof ctx.id === "string" && ctx.id.startsWith("country"))
+            return countryCtx && ["United States", "Canada"].includes(countryCtx.text)
+          })
+          setAddressSuggestions(filtered)
+        })
         .catch(() => setAddressSuggestions([]))
     }, 400)
 
@@ -178,6 +187,38 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
             </div>
 
             <div>
+              <Label htmlFor="city" data-required>
+                City <span className="text-red-500">*</span>
+              </Label>
+              <Input 
+                id="city" 
+                name="city" 
+                value={formState.city} 
+                onChange={handleInputChange} 
+                onBlur={() => handleBlur('city')}
+                placeholder="City" 
+                className={cn(touched.city && !formState.city?.trim() && "border-red-300")}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="website" data-required>
+                Website <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="website"
+                name="website"
+                value={formState.website}
+                onChange={handleInputChange}
+                onBlur={() => handleBlur('website')}
+                placeholder="https://example.com"
+                className={cn(touched.website && !formState.website?.trim() && "border-red-300")}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
               <Label htmlFor="address" data-required>
                 Address <span className="text-red-500">*</span>
               </Label>
@@ -223,38 +264,6 @@ export function SnapshotScreen({ formState, updateFormState, onNext, onPrevious 
                   </ul>
                 )}
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="website" data-required>
-                Website <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="website"
-                name="website"
-                value={formState.website}
-                onChange={handleInputChange}
-                onBlur={() => handleBlur('website')}
-                placeholder="https://example.com"
-                className={cn(touched.website && !formState.website?.trim() && "border-red-300")}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="city" data-required>
-                City <span className="text-red-500">*</span>
-              </Label>
-              <Input 
-                id="city" 
-                name="city" 
-                value={formState.city} 
-                onChange={handleInputChange} 
-                onBlur={() => handleBlur('city')}
-                placeholder="City" 
-                className={cn(touched.city && !formState.city?.trim() && "border-red-300")}
-              />
             </div>
 
             <div>
