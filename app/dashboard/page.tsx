@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { db } from "@/lib/firebase"
-import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore"
+import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -72,6 +72,9 @@ interface IntakeFormEntry {
   tradeShows?: boolean
   currentAssets?: string
   submittedAt?: string
+  // Soft delete fields
+  deletedAt?: string
+  deletedBy?: string
 }
 
 // Default password - should be changed via environment variable
@@ -107,10 +110,14 @@ export default function DashboardPage() {
       (snapshot) => {
         const formEntries: IntakeFormEntry[] = []
         snapshot.forEach((doc) => {
-          formEntries.push({
-            id: doc.id,
-            ...doc.data()
-          } as IntakeFormEntry)
+          const data = doc.data() as IntakeFormEntry
+          // Only include entries that haven't been deleted
+          if (!data.deletedAt) {
+            formEntries.push({
+              id: doc.id,
+              ...data
+            })
+          }
         })
         
         // Sort by submission date (newest first)
@@ -158,17 +165,21 @@ export default function DashboardPage() {
   const handleDelete = async (id: string) => {
     setIsDeleting(true)
     try {
-      await deleteDoc(doc(db, "intakeForms", id))
+      // Soft delete: Update the document with deletedAt timestamp instead of deleting it
+      await updateDoc(doc(db, "intakeForms", id), {
+        deletedAt: new Date().toISOString(),
+        deletedBy: "dashboard" // You could store actual user info here if you have authentication
+      })
       toast({
-        title: "Entry deleted",
-        description: "The intake form entry has been successfully deleted.",
+        title: "Entry removed",
+        description: "The intake form entry has been removed from the dashboard.",
       })
       setDeleteId(null)
     } catch (error) {
       console.error("Error deleting entry:", error)
       toast({
-        title: "Error deleting entry",
-        description: "Failed to delete the entry. Please try again.",
+        title: "Error removing entry",
+        description: "Failed to remove the entry. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -681,9 +692,10 @@ export default function DashboardPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the intake form entry
+              This will remove the intake form entry from the dashboard and CSV exports
               {deleteId && entries.find(e => e.id === deleteId)?.companyName && 
                 ` for ${entries.find(e => e.id === deleteId)?.companyName}`}.
+              The data will be preserved in the database for recovery if needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -696,10 +708,10 @@ export default function DashboardPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  Removing...
                 </>
               ) : (
-                "Delete"
+                "Remove"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
