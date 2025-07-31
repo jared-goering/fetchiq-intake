@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
 import { toast } from "@/components/ui/use-toast"
 import { ProgressBar } from "@/components/progress-bar"
 import { WelcomeScreen } from "@/components/screens/welcome-screen"
@@ -477,18 +476,8 @@ export function OppMapIntakeForm() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Logo and Progress bar - sticky at top */}
+      {/* Progress bar - sticky at top */}
       <div className="sticky top-0 z-10 bg-white py-4">
-        <div className="flex items-center justify-between mb-4">
-          <Image
-            src="/fetchIQ2.png"
-            alt="FetchIQ Logo"
-            width={120}
-            height={40}
-            className="h-auto"
-            priority
-          />
-        </div>
         <ProgressBar progress={calculateProgress()} />
       </div>
 
